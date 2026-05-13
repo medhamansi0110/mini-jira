@@ -4,6 +4,9 @@ A modern Kanban-style issue tracking application inspired by Jira, built using R
 The application allows users to create, edit, delete, search, filter, and manage tasks across different workflow stages with drag-and-drop functionality.
 
 ---
+## Live Demo
+
+https://medhamansi0110.github.io/mini-jira/
 
 ## Features
 
