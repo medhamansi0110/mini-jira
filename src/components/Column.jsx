@@ -2,6 +2,8 @@ import TaskCard from "./TaskCard";
 
 import { useDroppable } from "@dnd-kit/core";
 
+import { FaTrash } from "react-icons/fa";
+
 function Column({
   title,
   color,
@@ -10,11 +12,22 @@ function Column({
   setTasks,
   setShowModal,
   setSelectedTask,
+  deleteColumn,
 }) {
 
   const { setNodeRef } = useDroppable({
-    id: title.toLowerCase().replace(" ", ""),
+    id: title.toLowerCase().replace(/\s+/g, ""),
   });
+
+  const defaultColumns = [
+    "Backlog",
+    "Todo",
+    "In Progress",
+    "Done"
+  ];
+
+  const isDefaultColumn =
+    defaultColumns.includes(title);
 
   return (
     <div
@@ -38,6 +51,21 @@ function Column({
           </span>
 
         </div>
+
+        {/* Delete button only for custom columns */}
+
+        {!isDefaultColumn && (
+
+          <button
+            onClick={() =>
+              deleteColumn(title)
+            }
+            className="text-red-500 hover:text-red-700 transition"
+          >
+            <FaTrash />
+          </button>
+
+        )}
 
       </div>
 

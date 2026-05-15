@@ -1,5 +1,4 @@
 import Column from "./Column";
-
 import { DndContext } from "@dnd-kit/core";
 
 function Board({
@@ -8,19 +7,9 @@ function Board({
   setTasks,
   setShowModal,
   setSelectedTask,
+  columns,
+  deleteColumn,
 }) {
-
-  const todoTasks = tasks.filter(
-    (task) => task.status === "todo"
-  );
-
-  const progressTasks = tasks.filter(
-    (task) => task.status === "inprogress"
-  );
-
-  const doneTasks = tasks.filter(
-    (task) => task.status === "done"
-  );
 
   const handleDragEnd = (event) => {
 
@@ -56,41 +45,49 @@ function Board({
     setTasks(updatedTasks);
   };
 
+  const colors = [
+    "#6b7280",
+    "#2563eb",
+    "#f59e0b",
+    "#22c55e",
+    "#ec4899",
+    "#8b5cf6",
+    "#ef4444",
+    "#14b8a6",
+  ];
+
   return (
 
     <DndContext onDragEnd={handleDragEnd}>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-8">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 p-8">
 
-        <Column
-          title="Todo"
-          color="#2563eb"
-          tasks={todoTasks}
-          allTasks={allTasks}
-          setTasks={setTasks}
-          setShowModal={setShowModal}
-          setSelectedTask={setSelectedTask}
-        />
+        {columns.map((column, index) => (
 
-        <Column
-          title="In Progress"
-          color="#f59e0b"
-          tasks={progressTasks}
-          allTasks={allTasks}
-          setTasks={setTasks}
-          setShowModal={setShowModal}
-          setSelectedTask={setSelectedTask}
-        />
+          <Column
+            key={column}
+            title={column}
+            color={colors[index % colors.length]}
 
-        <Column
-          title="Done"
-          color="#22c55e"
-          tasks={doneTasks}
-          allTasks={allTasks}
-          setTasks={setTasks}
-          setShowModal={setShowModal}
-          setSelectedTask={setSelectedTask}
-        />
+            tasks={
+              tasks.filter(
+                (task) =>
+                  task.status.toLowerCase() ===
+                  column
+                    .toLowerCase()
+                    .replace(/\s+/g, "")
+              )
+            }
+
+            allTasks={allTasks}
+            setTasks={setTasks}
+            setShowModal={setShowModal}
+            setSelectedTask={setSelectedTask}
+
+            deleteColumn={deleteColumn}
+          />
+
+        ))}
 
       </div>
 

@@ -9,9 +9,7 @@ import initialTasks from "./data/tasks";
 
 function App() {
 
-  // Load Tasks from localStorage
   const [tasks, setTasks] = useState(() => {
-
     const savedTasks = localStorage.getItem("tasks");
 
     return savedTasks
@@ -19,23 +17,42 @@ function App() {
       : initialTasks;
   });
 
-  // Previous Tasks for Undo
+  // Dynamic columns with local storage
+  const [columns, setColumns] = useState(() => {
+
+    const savedColumns =
+      localStorage.getItem("columns");
+
+    return savedColumns
+      ? JSON.parse(savedColumns)
+      : [
+          "Backlog",
+          "Todo",
+          "In Progress",
+          "Done",
+        ];
+  });
+
   const [previousTasks, setPreviousTasks] = useState([]);
 
   const [showModal, setShowModal] = useState(false);
 
+  const [columnModal, setColumnModal] = useState(false);
+
+  const [newColumn, setNewColumn] = useState("");
+
   const [selectedTask, setSelectedTask] = useState(null);
 
-  // Search State
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Priority Filter State
-  const [priorityFilter, setPriorityFilter] = useState("All");
+  const [priorityFilter, setPriorityFilter] =
+    useState("All");
 
-  // Assignee Filter State
-  const [assigneeFilter, setAssigneeFilter] = useState("All");
+  const [assigneeFilter, setAssigneeFilter] =
+    useState("All");
 
-  // Save Tasks to localStorage
+
+
   useEffect(() => {
 
     localStorage.setItem(
@@ -45,7 +62,19 @@ function App() {
 
   }, [tasks]);
 
-  // Custom setTasks with Undo Support
+
+  // save columns
+  useEffect(() => {
+
+    localStorage.setItem(
+      "columns",
+      JSON.stringify(columns)
+    );
+
+  }, [columns]);
+
+
+
   const updateTasks = (newTasks) => {
 
     setPreviousTasks(tasks);
@@ -53,7 +82,8 @@ function App() {
     setTasks(newTasks);
   };
 
-  // Undo Function
+
+
   const handleUndo = () => {
 
     if (previousTasks.length > 0) {
@@ -64,13 +94,76 @@ function App() {
     }
   };
 
-  // Filter Logic
+
+
+  const addColumn = () => {
+
+    if (!newColumn.trim()) {
+      alert("Enter column title");
+      return;
+    }
+
+    if (
+      columns.some(
+        col =>
+          col.toLowerCase() ===
+          newColumn.toLowerCase()
+      )
+    ) {
+      alert("Column already exists");
+      return;
+    }
+
+    setColumns([
+      ...columns,
+      newColumn
+    ]);
+
+    setNewColumn("");
+
+    setColumnModal(false);
+  };
+
+
+  // delete custom columns
+  const deleteColumn = (columnName) => {
+
+    const defaultColumns = [
+      "Backlog",
+      "Todo",
+      "In Progress",
+      "Done"
+    ];
+
+    if (
+      defaultColumns.includes(columnName)
+    ) {
+
+      alert(
+        "Default columns cannot be deleted"
+      );
+
+      return;
+    }
+
+    setColumns(
+      columns.filter(
+        (col) =>
+          col !== columnName
+      )
+    );
+  };
+
+
+
   const filteredTasks = tasks.filter((task) => {
 
     const matchesSearch =
       task.title
         .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+        .includes(
+          searchTerm.toLowerCase()
+        );
 
     const matchesPriority =
       priorityFilter === "All" ||
@@ -87,16 +180,19 @@ function App() {
     );
   });
 
+
+
   return (
     <div className="min-h-screen bg-gray-950 text-white">
 
-      {/* Navbar */}
       <Navbar
         setShowModal={setShowModal}
         handleUndo={handleUndo}
+        openColumnModal={() =>
+          setColumnModal(true)
+        }
       />
 
-      {/* Filters */}
       <Filters
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -107,21 +203,22 @@ function App() {
         tasks={tasks}
       />
 
-      {/* Board */}
       <Board
-  tasks={filteredTasks}
-  allTasks={tasks}
-  setTasks={updateTasks}
-  setShowModal={setShowModal}
-  setSelectedTask={setSelectedTask}
-/>
+        tasks={filteredTasks}
+        allTasks={tasks}
+        setTasks={updateTasks}
+        setShowModal={setShowModal}
+        setSelectedTask={setSelectedTask}
+        columns={columns}
+        deleteColumn={deleteColumn}
+      />
 
-      {/* Footer */}
       <div className="px-8 pb-6 text-gray-400 text-lg border-t border-gray-800 pt-5">
-        Total Tasks: {filteredTasks.length}
+        Total Tasks:
+        {" "}
+        {filteredTasks.length}
       </div>
 
-      {/* Modal */}
       {showModal && (
         <TaskModal
           setShowModal={setShowModal}
@@ -130,6 +227,54 @@ function App() {
           selectedTask={selectedTask}
           setSelectedTask={setSelectedTask}
         />
+      )}
+
+      {/* Column Modal */}
+      {columnModal && (
+
+        <div className="fixed inset-0 bg-black/70 flex justify-center items-center">
+
+          <div className="bg-gray-900 p-6 rounded-xl w-[400px]">
+
+            <h2 className="text-xl font-bold mb-4">
+              Add New Column
+            </h2>
+
+            <input
+              type="text"
+              value={newColumn}
+              onChange={(e)=>
+                setNewColumn(
+                  e.target.value
+                )
+              }
+              placeholder="Column title..."
+              className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700"
+            />
+
+            <div className="flex gap-4 mt-5">
+
+              <button
+                onClick={addColumn}
+                className="bg-green-600 px-4 py-2 rounded-lg"
+              >
+                Add
+              </button>
+
+              <button
+                onClick={() =>
+                  setColumnModal(false)
+                }
+                className="bg-red-600 px-4 py-2 rounded-lg"
+              >
+                Cancel
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
       )}
 
     </div>
